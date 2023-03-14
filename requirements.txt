@@ -1,0 +1,2 @@
+starknet-py==0.14.0a0
+python-dotenv

@@ -1,0 +1,9 @@
+[project]
+protostar-version = "0.9.1"
+
+# Shared Configuration (affects all commands)
+lib-path = ["lib"]                                                                               
+cairo-path = ["src/cairo", "lib/cairo_lang/src", "lib/cairo_contracts/src"]    
+
+[contracts]
+PaidAccount = ["./src/cairo/contracts/PaidAccount.cairo"]
