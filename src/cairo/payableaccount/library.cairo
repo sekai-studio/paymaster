@@ -51,7 +51,7 @@ func SignatureVerification(
 //
 
 @storage_var
-func PaidAccount_public_key() -> (public_key: felt) {
+func PayableAccount_public_key() -> (public_key: felt) {
 }
 
 //
@@ -74,7 +74,7 @@ struct AccountCallArray {
     data_len: felt,
 }
 
-struct PaidAccountCallArray {
+struct PayableAccountCallArray {
     to: felt,
     selector: felt,
     payer: felt,
@@ -82,7 +82,7 @@ struct PaidAccountCallArray {
     data_len: felt,
 }
 
-namespace PaidAccount {
+namespace PayableAccount {
     //
     // Initializer
     //
@@ -90,7 +90,7 @@ namespace PaidAccount {
     func initializer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         _public_key: felt
     ) {
-        PaidAccount_public_key.write(_public_key);
+        PayableAccount_public_key.write(_public_key);
         return ();
     }
 
@@ -101,7 +101,7 @@ namespace PaidAccount {
     func assert_only_self{syscall_ptr: felt*}() {
         let (self) = get_contract_address();
         let (caller) = get_caller_address();
-        with_attr error_message( "PaidAccount: caller is not this account") {
+        with_attr error_message( "PayableAccount: caller is not this account") {
             assert self = caller;
         }
         return ();
@@ -114,7 +114,7 @@ namespace PaidAccount {
     func get_public_key{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         public_key: felt
     ) {
-        return PaidAccount_public_key.read();
+        return PayableAccount_public_key.read();
     }
 
     func supports_interface{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(interface_id: felt) -> (
@@ -137,7 +137,7 @@ namespace PaidAccount {
         new_public_key: felt
     ) {
         assert_only_self();
-        PaidAccount_public_key.write(new_public_key);
+        PayableAccount_public_key.write(new_public_key);
         return ();
     }
 
@@ -151,7 +151,7 @@ namespace PaidAccount {
         ecdsa_ptr: SignatureBuiltin*,
         range_check_ptr,
     }(hash: felt, signature_len: felt, signature: felt*) -> (is_valid: felt) {
-        let (_public_key) = PaidAccount_public_key.read();
+        let (_public_key) = PayableAccount_public_key.read();
 
         // This interface expects a signature pointer and length to make
         // no assumption about signature validation schemes.
@@ -213,13 +213,13 @@ namespace PaidAccount {
 
         let (tx_info) = get_tx_info();
         // Disallow deprecated tx versions
-        with_attr error_message( "PaidAccount: deprecated tx version") {
+        with_attr error_message( "PayableAccount: deprecated tx version") {
             assert is_le_felt(TRANSACTION_VERSION, tx_info.version) = TRUE;
         }
 
         // Assert not a reentrant call
         let (caller) = get_caller_address();
-        with_attr error_message( "PaidAccount: reentrant call") {
+        with_attr error_message( "PayableAccount: reentrant call") {
             assert caller = 0;
         }
 
@@ -241,7 +241,7 @@ namespace PaidAccount {
         ecdsa_ptr: SignatureBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(call_array_len: felt, call_array: PaidAccountCallArray*, calldata_len: felt, calldata: felt*, signature_len: felt, signature: felt*) -> (
+    }(call_array_len: felt, call_array: PayableAccountCallArray*, calldata_len: felt, calldata: felt*, signature_len: felt, signature: felt*) -> (
         response_len: felt, response: felt*
     ) {
         alloc_locals;
@@ -252,11 +252,11 @@ namespace PaidAccount {
 
         let (payer_tx_info) = get_tx_info();
         // Disallow deprecated tx versions
-        with_attr error_message( "PaidAccount: called with deprecated tx version") {
+        with_attr error_message( "PayableAccount: called with deprecated tx version") {
             assert is_le_felt(TRANSACTION_VERSION, payer_tx_info.version) = TRUE;
         }
 
-        let (_public_key) = PaidAccount_public_key.read();
+        let (_public_key) = PayableAccount_public_key.read();
 
         // This interface expects a signature pointer and length to make
         // no assumption about signature validation schemes.
@@ -349,7 +349,7 @@ namespace PaidAccount {
     }
 
     func _check_caller_is_payer{syscall_ptr: felt*}(
-        caller: felt, call_array_len: felt, call_array: PaidAccountCallArray*
+        caller: felt, call_array_len: felt, call_array: PayableAccountCallArray*
     ) {
         // if no more calls to check
         if (call_array_len == 0) {
@@ -357,13 +357,13 @@ namespace PaidAccount {
         }
 
         // check the current call
-        with_attr error_message( "PaidAccount: caller and payer addresses are not the same") {
+        with_attr error_message( "PayableAccount: caller and payer addresses are not the same") {
             assert caller = [call_array].payer;
         }
 
         // check the remaining calls recursively
         _check_caller_is_payer(
-            caller, call_array_len - 1, call_array + PaidAccountCallArray.SIZE
+            caller, call_array_len - 1, call_array + PayableAccountCallArray.SIZE
         );
         return ();
     }
@@ -391,7 +391,7 @@ namespace PaidAccount {
     }
 
     func _from_paid_call_array_to_call{syscall_ptr: felt*}(
-        paid_call_array_len: felt, paid_call_array: PaidAccountCallArray*, calldata: felt*, calls: Call*
+        paid_call_array_len: felt, paid_call_array: PayableAccountCallArray*, calldata: felt*, calls: Call*
     ) {
         // if no more calls
         if (paid_call_array_len == 0) {
@@ -407,13 +407,13 @@ namespace PaidAccount {
         );
         // parse the remaining calls recursively
         _from_paid_call_array_to_call(
-            paid_call_array_len - 1, paid_call_array + PaidAccountCallArray.SIZE, calldata, calls + Call.SIZE
+            paid_call_array_len - 1, paid_call_array + PayableAccountCallArray.SIZE, calldata, calls + Call.SIZE
         );
         return ();
     }
 
     func _rebuild_signed_calldata{syscall_ptr: felt*}(
-        call_array_len: felt, call_array: PaidAccountCallArray*, calldata_len: felt, calldata: felt*
+        call_array_len: felt, call_array: PayableAccountCallArray*, calldata_len: felt, calldata: felt*
     ) -> (signed_calldata_len: felt, signed_calldata: felt*) {
         alloc_locals;
 
@@ -425,7 +425,7 @@ namespace PaidAccount {
         
         let (local signed_calldata: felt*) = alloc();
         
-        tempvar call_array_felt_size = call_array_len * PaidAccountCallArray.SIZE;
+        tempvar call_array_felt_size = call_array_len * PayableAccountCallArray.SIZE;
         memcpy(signed_calldata, call_array_len_array, 1);
         memcpy(signed_calldata + 1, call_array, call_array_felt_size);
         memcpy(signed_calldata + 1 + call_array_felt_size, calldata_len_array, 1);

@@ -152,7 +152,7 @@ class BaseSigner():
 
 class MockSigner(BaseSigner):
     """
-    Utility for sending signed transactions to a PaidAccount on Starknet.
+    Utility for sending signed transactions to a PayableAccount on Starknet.
 
     Parameters
     ----------
@@ -184,7 +184,7 @@ class MockSigner(BaseSigner):
     def __init__(self, private_key):
         self.signer = Signer(private_key)
         self.public_key = self.signer.public_key
-        self.class_hash = get_class_hash("PaidAccount")
+        self.class_hash = get_class_hash("PayableAccount")
 
     def sign(self, transaction_hash):
         sig_r, sig_s = self.signer.sign(transaction_hash)

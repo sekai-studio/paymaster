@@ -28,9 +28,9 @@ from starknet_py.serialization.data_serializers.struct_serializer import (
 )
 from starknet_py.utils.iterable import ensure_iterable
 
-from .paid_call import PaidCall, PaidCalls
+from .payable_call import PayableCall, PayableCalls
 
-class PaidAccount(Account):
+class PayableAccount(Account):
     def __init__(
         self,
         *,
@@ -64,7 +64,7 @@ class PaidAccount(Account):
 
     async def sign_invoke_paid_transaction(
         self,
-        paid_calls: PaidCalls,
+        paid_calls: PayableCalls,
     ) -> Invoke:
         paid_execute_tx = await self._prepare_invoke_paid_function(paid_calls)
         signature = self.signer.sign_transaction(paid_execute_tx)
@@ -72,7 +72,7 @@ class PaidAccount(Account):
 
     async def _prepare_invoke_paid_function(
         self,
-        paid_calls: PaidCalls,
+        paid_calls: PayableCalls,
     ) -> Invoke:
         """
         Takes paid calls and creates Invoke from them.
@@ -102,7 +102,7 @@ class PaidAccount(Account):
         return _add_max_fee_to_transaction(transaction, max_fee)
 
 
-def _parse_paid_call(paid_call: PaidCall, entire_calldata: List) -> Tuple[Dict, List]:
+def _parse_paid_call(paid_call: PayableCall, entire_calldata: List) -> Tuple[Dict, List]:
     _data = {
         "to": paid_call.to_addr,
         "selector": paid_call.selector,
@@ -114,7 +114,7 @@ def _parse_paid_call(paid_call: PaidCall, entire_calldata: List) -> Tuple[Dict, 
 
     return _data, entire_calldata
 
-def _merge_paid_calls(calls: Iterable[PaidCall]) -> Tuple[List[Dict], List[int]]:
+def _merge_paid_calls(calls: Iterable[PayableCall]) -> Tuple[List[Dict], List[int]]:
     call_descriptions = []
     entire_calldata = []
     for call in calls:

@@ -4,7 +4,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin, BitwiseBuiltin
 
-from src.cairo.contracts.library import PaidAccount, PaidAccountCallArray
+from src.cairo.contracts.library import PayableAccount, PayableAccountCallArray
 
 from tests.cairo.account.tx_info_generation import TxInfoGeneration
 from tests.cairo.account.constants import (
@@ -28,12 +28,12 @@ func __setup__{syscall_ptr: felt*, range_check_ptr}() {
 func test_rebuild_signed_calldata{syscall_ptr: felt*, range_check_ptr}() {
     alloc_locals;
 
-    let(local call_array_len, local call_array: PaidAccountCallArray*) = TxInfoGeneration.generate_call_array();
+    let(local call_array_len, local call_array: PayableAccountCallArray*) = TxInfoGeneration.generate_call_array();
     
     let(local calldata_len, local calldata: felt*) = TxInfoGeneration.generate_calldata();
 
-    let (signed_calldata_len, signed_calldata) = PaidAccount._rebuild_signed_calldata(call_array_len, call_array, calldata_len, calldata);
-    assert signed_calldata_len = call_array_len * PaidAccountCallArray.SIZE + calldata_len + 2;
+    let (signed_calldata_len, signed_calldata) = PayableAccount._rebuild_signed_calldata(call_array_len, call_array, calldata_len, calldata);
+    assert signed_calldata_len = call_array_len * PayableAccountCallArray.SIZE + calldata_len + 2;
     
     assert signed_calldata[0] = 1;
 

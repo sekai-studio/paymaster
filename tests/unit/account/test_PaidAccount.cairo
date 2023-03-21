@@ -7,8 +7,8 @@ from starkware.cairo.common.uint256 import Uint256
 
 from openzeppelin.token.erc20.IERC20 import IERC20
 
-from src.cairo.contracts.interfaces.IPaidAccount import IPaidAccount
-from src.cairo.contracts.library import PaidAccountCallArray
+from src.cairo.contracts.interfaces.IPayableAccount import IPayableAccount
+from src.cairo.contracts.library import PayableAccountCallArray
 
 from tests.cairo.account.tx_info_generation import TxInfoGeneration
 from tests.cairo.account.constants import (
@@ -35,12 +35,12 @@ func __setup__{syscall_ptr: felt*, range_check_ptr}() {
     tempvar recipient = RECIPIENT;
     %{
         context.payer_address = deploy_contract(
-            "./src/cairo/contracts/PaidAccount.cairo",
+            "./src/cairo/payableaccount/PayableAccount.cairo",
             [ids.payer_public_key],
         ).contract_address
 
         context.user_address = deploy_contract(
-            "./src/cairo/contracts/PaidAccount.cairo",
+            "./src/cairo/payableaccount/PayableAccount.cairo",
             [ids.user_public_key],
         ).contract_address
 
@@ -70,7 +70,7 @@ func test_constructor{syscall_ptr: felt*, range_check_ptr}() {
         ids.erc20_address = context.erc20_address
     %}
 
-    let (user_public_key) = IPaidAccount.getPublicKey(user_address);
+    let (user_public_key) = IPayableAccount.getPublicKey(user_address);
     assert USER_PUBLIC_KEY = user_public_key;
 
     let (payer_balance: Uint256) = IERC20.balanceOf(erc20_address, payer_address);
@@ -116,13 +116,13 @@ func test_execute_paid{
         stop_prank_callable = start_prank(ids.payer_address, target_contract_address=context.user_address)
     %}
 
-    let(local call_array_len, local call_array: PaidAccountCallArray*) = TxInfoGeneration.generate_call_array();
+    let(local call_array_len, local call_array: PayableAccountCallArray*) = TxInfoGeneration.generate_call_array();
     
     let(local calldata_len, local calldata: felt*) = TxInfoGeneration.generate_calldata();
     
     let(local signature_len, local signature: felt*) = TxInfoGeneration.generate_signature();
 
-    IPaidAccount.executePaid(
+    IPayableAccount.executePaid(
         user_address,
         call_array_len,
         call_array,

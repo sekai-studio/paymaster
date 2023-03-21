@@ -27,7 +27,7 @@ async def generate_user_signed_tx(
         recipient_address: int,
         amount: int
     ) -> Invoke:
-        user_account = ConnectorUtils.get_paid_account(
+        user_account = ConnectorUtils.get_payable_account(
             private_key=user_private_key,
             address=user_address,
             payer=payer,

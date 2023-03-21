@@ -1,9 +1,9 @@
 %lang starknet
 
-from src.cairo.paidaccount.library import AccountCallArray, PaidAccountCallArray
+from src.cairo.paidaccount.library import AccountCallArray, PayableAccountCallArray
 
 @contract_interface
-namespace IPaidAccount {
+namespace IPayableAccount {
     func getPublicKey() -> (
         publicKey: felt
     ) {
@@ -40,7 +40,7 @@ namespace IPaidAccount {
 
     func executePaid(
         call_array_len: felt,
-        call_array: PaidAccountCallArray*,
+        call_array: PayableAccountCallArray*,
         calldata_len: felt,
         calldata: felt*,
         signature_len: felt, 

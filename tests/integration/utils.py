@@ -115,7 +115,7 @@ def cached_contract(state, _class, deployed):
 
 class State:
     """
-    Utility helper for PaidAccount class to initialize and return StarkNet state.
+    Utility helper for PayableAccount class to initialize and return StarkNet state.
 
     Example
     ---------
@@ -130,9 +130,9 @@ class State:
         return starknet
 
 
-class PaidAccount:
+class PayableAccount:
     """
-    Utility for deploying PaidAccount contract.
+    Utility for deploying PayableAccount contract.
 
     Parameters
     ----------
@@ -143,14 +143,14 @@ class PaidAccount:
     ----------
 
     >>> starknet = await State.init()
-    >>> paid_account = await PaidAccount.deploy(public_key)
+    >>> payable_account = await PayableAccount.deploy(public_key)
 
     """
-    get_class = get_contract_class("PaidAccount")
+    get_class = get_contract_class("PayableAccount")
 
     async def deploy(public_key):
-        paid_account = await starknet.deploy(
-            contract_class=PaidAccount.get_class,
+        payable_account = await starknet.deploy(
+            contract_class=PayableAccount.get_class,
             constructor_calldata=[public_key]
         )
-        return paid_account
+        return payable_account

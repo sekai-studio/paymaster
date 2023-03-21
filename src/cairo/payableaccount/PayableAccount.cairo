@@ -3,7 +3,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_tx_info
 
-from src.cairo.paidaccount.library import PaidAccount, AccountCallArray, PaidAccountCallArray
+from src.cairo.payableaccount.library import PayableAccount, AccountCallArray, PayableAccountCallArray
 
 //
 // Constructor
@@ -15,7 +15,7 @@ func constructor{
     pedersen_ptr: HashBuiltin*,
     range_check_ptr
 }(publicKey: felt) {
-    PaidAccount.initializer(publicKey);
+    PayableAccount.initializer(publicKey);
     return ();
 }
 
@@ -29,7 +29,7 @@ func getPublicKey{
     pedersen_ptr: HashBuiltin*,
     range_check_ptr
 } () -> (publicKey: felt) {
-    let (publicKey: felt) = PaidAccount.get_public_key();
+    let (publicKey: felt) = PayableAccount.get_public_key();
     return (publicKey=publicKey);
 }
 
@@ -39,7 +39,7 @@ func supportsInterface{
     pedersen_ptr: HashBuiltin*,
     range_check_ptr
 } (interfaceId: felt) -> (success: felt) {
-    return PaidAccount.supports_interface(interfaceId);
+    return PayableAccount.supports_interface(interfaceId);
 }
 
 //
@@ -52,7 +52,7 @@ func setPublicKey{
     pedersen_ptr: HashBuiltin*,
     range_check_ptr
 } (newPublicKey: felt) {
-    PaidAccount.set_public_key(newPublicKey);
+    PayableAccount.set_public_key(newPublicKey);
     return ();
 }
 
@@ -71,7 +71,7 @@ func isValidSignature{
     signature_len: felt,
     signature: felt*
 ) -> (isValid: felt) {
-    let (isValid: felt) = PaidAccount.is_valid_signature(hash, signature_len, signature);
+    let (isValid: felt) = PayableAccount.is_valid_signature(hash, signature_len, signature);
     return (isValid=isValid);
 }
 
@@ -88,7 +88,7 @@ func __validate__{
     calldata: felt*
 ) {
     let (tx_info) = get_tx_info();
-    PaidAccount.is_valid_signature(tx_info.transaction_hash, tx_info.signature_len, tx_info.signature);
+    PayableAccount.is_valid_signature(tx_info.transaction_hash, tx_info.signature_len, tx_info.signature);
     return ();
 }
 
@@ -100,7 +100,7 @@ func __validate_declare__{
     range_check_ptr
 } (class_hash: felt) {
     let (tx_info) = get_tx_info();
-    PaidAccount.is_valid_signature(tx_info.transaction_hash, tx_info.signature_len, tx_info.signature);
+    PayableAccount.is_valid_signature(tx_info.transaction_hash, tx_info.signature_len, tx_info.signature);
     return ();
 }
 
@@ -116,7 +116,7 @@ func __validate_deploy__{
     publicKey: felt
 ) {
     let (tx_info) = get_tx_info();
-    PaidAccount.is_valid_signature(tx_info.transaction_hash, tx_info.signature_len, tx_info.signature);
+    PayableAccount.is_valid_signature(tx_info.transaction_hash, tx_info.signature_len, tx_info.signature);
     return ();
 }
 
@@ -136,7 +136,7 @@ func __execute__{
     response_len: felt,
     response: felt*
 ) {
-    let (response_len, response) = PaidAccount.execute(
+    let (response_len, response) = PayableAccount.execute(
         call_array_len, call_array, calldata_len, calldata
     );
     return (response_len, response);
@@ -151,7 +151,7 @@ func executePaid{
     range_check_ptr,
 }(
     call_array_len: felt,
-    call_array: PaidAccountCallArray*,
+    call_array: PayableAccountCallArray*,
     calldata_len: felt,
     calldata: felt*,
     signature_len: felt, 
@@ -160,7 +160,7 @@ func executePaid{
     response_len: felt,
     response: felt*
 ) {
-    let (response_len, response) = PaidAccount.execute_paid(
+    let (response_len, response) = PayableAccount.execute_paid(
         call_array_len, call_array, calldata_len, calldata, signature_len, signature
     );
     return (response_len, response);

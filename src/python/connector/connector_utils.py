@@ -3,7 +3,7 @@ from starknet_py.net import KeyPair
 from starknet_py.net.gateway_client import GatewayClient
 from starknet_py.net.models.chains import StarknetChainId
 
-from ..paymaster import PaidAccount
+from ..paymaster import PayableAccount
 
 class ConnectorUtils:
     @staticmethod
@@ -23,16 +23,16 @@ class ConnectorUtils:
 	    )
 
     @staticmethod
-    def get_paid_account(
+    def get_payable_account(
         private_key: int,
         address: int,
         payer: int,
         network: str, 
         chain: StarknetChainId
-    ) -> PaidAccount:
+    ) -> PayableAccount:
         key_pair = KeyPair.from_private_key(private_key)
 
-        return PaidAccount(
+        return PayableAccount(
             client=GatewayClient(net=network),
             address=address,
             payer=payer,

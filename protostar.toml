@@ -6,4 +6,4 @@ lib-path = ["lib"]
 cairo-path = ["src/cairo", "lib/cairo_lang/src", "lib/cairo_contracts/src"]    
 
 [contracts]
-PaidAccount = ["./src/cairo/paidaccount/PaidAccount.cairo"]
+PayableAccount = ["./src/cairo/payableaccount/PayableAccount.cairo"]

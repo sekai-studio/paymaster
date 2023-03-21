@@ -3,7 +3,7 @@ import pytest_asyncio
 from signers import MockSigner, get_raw_invoke
 from nile.utils import TRUE
 from nile.utils.test import assert_revert
-from utils import get_contract_class, cached_contract, State, PaidAccount, IACCOUNT_ID
+from utils import get_contract_class, cached_contract, State, PayableAccount, IACCOUNT_ID
 
 
 signer = MockSigner(123456789987654321)
@@ -12,7 +12,7 @@ other = MockSigner(987654321123456789)
 
 @pytest.fixture(scope='module')
 def contract_classes():
-    account_cls = PaidAccount.get_class
+    account_cls = PayableAccount.get_class
     init_cls = get_contract_class("Initializable")
     attacker_cls = get_contract_class("AccountReentrancy")
 
@@ -23,8 +23,8 @@ def contract_classes():
 async def account_init(contract_classes):
     _, init_cls, attacker_cls = contract_classes
     starknet = await State.init()
-    account1 = await PaidAccount.deploy(signer.public_key)
-    account2 = await PaidAccount.deploy(signer.public_key)
+    account1 = await PayableAccount.deploy(signer.public_key)
+    account2 = await PayableAccount.deploy(signer.public_key)
 
     initializable1 = await starknet.deploy(
         contract_class=init_cls,
@@ -59,7 +59,7 @@ def account_factory(contract_classes, account_init):
 @pytest.mark.asyncio
 async def test_counterfactual_deployment(account_factory):
     account, *_ = account_factory
-    await signer.declare_class(account, "PaidAccount")
+    await signer.declare_class(account, "PayableAccount")
 
     execution_info = await signer.deploy_account(account.state, [signer.public_key])
     address = execution_info.validate_info.contract_address
@@ -223,7 +223,7 @@ async def test_public_key_setter_different_account(account_factory):
     # set new pubkey
     await assert_revert(
         signer.send_transaction(bad_account, account.contract_address, 'setPublicKey', [other.public_key]),
-        reverted_with= "PaidAccount: caller is not this account"
+        reverted_with= "PayableAccount: caller is not this account"
     )
 
 
@@ -234,7 +234,7 @@ async def test_account_takeover_with_reentrant_call(account_factory):
     await assert_revert(
         signer.send_transaction(
             account, attacker.contract_address, 'account_takeover', []),
-        reverted_with= "PaidAccount: reentrant call"
+        reverted_with= "PayableAccount: reentrant call"
     )
 
     execution_info = await account.getPublicKey().call()
@@ -242,4 +242,4 @@ async def test_account_takeover_with_reentrant_call(account_factory):
 
 
 async def test_interface():
-    assert get_contract_class("IPaidAccount")
+    assert get_contract_class("IPayableAccount")

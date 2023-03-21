@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.alloc import alloc
 
-from src.cairo.contracts.library import PaidAccountCallArray
+from src.cairo.contracts.library import PayableAccountCallArray
 
 from tests.cairo.account.constants import (
     PAYER_ADDRESS,
@@ -19,14 +19,14 @@ namespace TxInfoGeneration{
     //
 
     func generate_call_array{syscall_ptr: felt*, range_check_ptr}() -> (
-            call_array_len: felt, call_array: PaidAccountCallArray*
+            call_array_len: felt, call_array: PayableAccountCallArray*
     ) {
         alloc_locals;
 
         let call_array_len = 1;
-        let (local call_array: PaidAccountCallArray*) = alloc();
+        let (local call_array: PayableAccountCallArray*) = alloc();
 
-        assert call_array[0] = PaidAccountCallArray(
+        assert call_array[0] = PayableAccountCallArray(
             ETH_TOKEN_ADDRESS, 
             TRANSFER_SELECTOR,
             PAYER_ADDRESS,
@@ -38,14 +38,14 @@ namespace TxInfoGeneration{
     }
 
     func generate_call_array_not_payer{syscall_ptr: felt*, range_check_ptr}() -> (
-            call_array_len: felt, call_array: PaidAccountCallArray*
+            call_array_len: felt, call_array: PayableAccountCallArray*
     ) {
         alloc_locals;
 
         let call_array_len = 1;
-        let (local call_array: PaidAccountCallArray*) = alloc();
+        let (local call_array: PayableAccountCallArray*) = alloc();
 
-        assert call_array[0] = PaidAccountCallArray(
+        assert call_array[0] = PayableAccountCallArray(
             ETH_TOKEN_ADDRESS, 
             TRANSFER_SELECTOR,
             NOT_PAYER_ADDRESS,

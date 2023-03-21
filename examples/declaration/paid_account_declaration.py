@@ -24,18 +24,18 @@ async def main():
         payer_address=payer_address,
     )
 
-	# PaidAccount declaration
+	# PayableAccount declaration
 
-	print("[Paymaster] Starting declaration of PaidAccount.")
-	paid_account_compiled = pathlib.Path('./build/PaidAccount.json').read_text("utf-8")
-	paid_account_declare = await Contract.declare(
+	print("[Paymaster] Starting declaration of PayableAccount.")
+	payable_account_compiled = pathlib.Path('./build/PayableAccount.json').read_text("utf-8")
+	payable_account_declare = await Contract.declare(
 		account=connector.payer_account, 
-		compiled_contract=paid_account_compiled, 
+		compiled_contract=payable_account_compiled, 
 		max_fee=int(2e16)
 	)
 
-	await paid_account_declare.wait_for_acceptance()
-	print("[Paymaster] Declaration of PaidAccount successful.")
+	await payable_account_declare.wait_for_acceptance()
+	print("[Paymaster] Declaration of PayableAccount successful.")
 
 	return
 
