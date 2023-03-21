@@ -3,8 +3,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_tx_info
 
-from src.cairo.contracts.library import PaidAccount, AccountCallArray, PaidAccountCallArray
-
+from src.cairo.paidaccount.library import PaidAccount, AccountCallArray, PaidAccountCallArray
 
 //
 // Constructor

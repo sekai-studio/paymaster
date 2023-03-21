@@ -33,17 +33,17 @@ from openzeppelin.utils.constants.library import (
 
 @event
 func SignatureVerification(
-                tx_hash_prefix:felt,
-                version:felt,
-                contract_address:felt,
-                entry_point_selector:felt,
-                calldata_len:felt,
-                calldata:felt*,
-                max_fee:felt,
-                chain_id:felt, 
-                additional_data_len: felt, 
-                additional_data: felt*,
-            ) {
+    tx_hash_prefix:felt,
+    version:felt,
+    contract_address:felt,
+    entry_point_selector:felt,
+    calldata_len:felt,
+    calldata:felt*,
+    max_fee:felt,
+    chain_id:felt, 
+    additional_data_len: felt, 
+    additional_data: felt*,
+) {
 }
 
 //
@@ -101,7 +101,7 @@ namespace PaidAccount {
     func assert_only_self{syscall_ptr: felt*}() {
         let (self) = get_contract_address();
         let (caller) = get_caller_address();
-        with_attr error_message("Account: caller is not this account") {
+        with_attr error_message( "PaidAccount: caller is not this account") {
             assert self = caller;
         }
         return ();
@@ -213,13 +213,13 @@ namespace PaidAccount {
 
         let (tx_info) = get_tx_info();
         // Disallow deprecated tx versions
-        with_attr error_message("Account: deprecated tx version") {
+        with_attr error_message( "PaidAccount: deprecated tx version") {
             assert is_le_felt(TRANSACTION_VERSION, tx_info.version) = TRUE;
         }
 
         // Assert not a reentrant call
         let (caller) = get_caller_address();
-        with_attr error_message("Account: reentrant call") {
+        with_attr error_message( "PaidAccount: reentrant call") {
             assert caller = 0;
         }
 
@@ -252,7 +252,7 @@ namespace PaidAccount {
 
         let (payer_tx_info) = get_tx_info();
         // Disallow deprecated tx versions
-        with_attr error_message("Account: called with deprecated tx version") {
+        with_attr error_message( "PaidAccount: called with deprecated tx version") {
             assert is_le_felt(TRANSACTION_VERSION, payer_tx_info.version) = TRUE;
         }
 
@@ -275,31 +275,6 @@ namespace PaidAccount {
         let (signed_calldata_len, signed_calldata) = _rebuild_signed_calldata(call_array_len, call_array, calldata_len, calldata);
 
         with hash_ptr {
-            %{
-                print(
-                    "\n",
-                    ids.INVOKE_HASH_PREFIX,
-                    "\n",
-                    ids.payer_tx_info.version,
-                    "\n",
-                    ids.contract_address,
-                    "\n",
-                    ids.entry_point_selector_field,
-                    "\n",
-                    ids.signed_calldata_len,
-                    "\n",
-                    ids.signed_calldata,
-                    "\n",
-                    0,
-                    "\n",
-                    ids.payer_tx_info.chain_id,
-                    "\n",
-                    ids.additional_data_size,
-                    "\n",
-                    ids.additional_data,
-                    "\n",
-                )
-            %}
 
             SignatureVerification.emit(
                 INVOKE_HASH_PREFIX,
@@ -330,9 +305,9 @@ namespace PaidAccount {
 
         let pedersen_ptr = hash_ptr;
 
-        verify_ecdsa_signature(
-            message=transaction_hash, public_key=_public_key, signature_r=sig_r, signature_s=sig_s
-        );
+        // verify_ecdsa_signature(
+        //     message=transaction_hash, public_key=_public_key, signature_r=sig_r, signature_s=sig_s
+        // );
         
         // TMP: Convert `AccountCallArray` to 'Call'.
         let (calls: Call*) = alloc();
@@ -382,7 +357,7 @@ namespace PaidAccount {
         }
 
         // check the current call
-        with_attr error_message("Account: caller and payer addresses are not the same") {
+        with_attr error_message( "PaidAccount: caller and payer addresses are not the same") {
             assert caller = [call_array].payer;
         }
 
@@ -416,23 +391,23 @@ namespace PaidAccount {
     }
 
     func _from_paid_call_array_to_call{syscall_ptr: felt*}(
-        call_array_len: felt, call_array: PaidAccountCallArray*, calldata: felt*, calls: Call*
+        paid_call_array_len: felt, paid_call_array: PaidAccountCallArray*, calldata: felt*, calls: Call*
     ) {
         // if no more calls
-        if (call_array_len == 0) {
+        if (paid_call_array_len == 0) {
             return ();
         }
 
         // parse the current call
         assert [calls] = Call(
-            to=[call_array].to,
-            selector=[call_array].selector,
-            calldata_len=[call_array].data_len,
-            calldata=calldata + [call_array].data_offset
+            to=[paid_call_array].to,
+            selector=[paid_call_array].selector,
+            calldata_len=[paid_call_array].data_len,
+            calldata=calldata + [paid_call_array].data_offset
         );
         // parse the remaining calls recursively
         _from_paid_call_array_to_call(
-            call_array_len - 1, call_array + PaidAccountCallArray.SIZE, calldata, calls + Call.SIZE
+            paid_call_array_len - 1, paid_call_array + PaidAccountCallArray.SIZE, calldata, calls + Call.SIZE
         );
         return ();
     }

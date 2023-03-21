@@ -12,10 +12,10 @@ from starknet_py.net.client_models import Invoke
 from starknet_py.proxy.contract_abi_resolver import ProxyConfig
 from starkware.starknet.cli.starknet_cli import print_invoke_tx
 
-from ....src.python.connector import Connector
-from ....src.python.connector import ConnectorUtils
-from ....src.python.paymaster import PaidCall
-from ....src.python.proxy import CustomProxyCheck
+from src.python.connector import Connector
+from src.python.connector import ConnectorUtils
+from src.python.paymaster import PaidCall
+from src.python.proxy import CustomProxyCheck
 
 
 async def generate_user_signed_tx(

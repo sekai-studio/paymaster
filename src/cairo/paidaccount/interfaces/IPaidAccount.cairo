@@ -1,15 +1,6 @@
 %lang starknet
 
-from src.cairo.contracts.library import AccountCallArray
-
-//TODO remove this
-struct PaidAccountCallArray {
-    to: felt,
-    selector: felt,
-    payer: felt,
-    data_offset: felt,
-    data_len: felt,
-}
+from src.cairo.paidaccount.library import AccountCallArray, PaidAccountCallArray
 
 @contract_interface
 namespace IPaidAccount {
