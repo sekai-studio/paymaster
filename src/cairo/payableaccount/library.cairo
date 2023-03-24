@@ -65,8 +65,6 @@ struct Call {
     calldata: felt*,
 }
 
-// Tmp struct introduced while we wait for Cairo
-// to support passing `[AccountCall]` to __execute__
 struct AccountCallArray {
     to: felt,
     selector: felt,
@@ -223,7 +221,7 @@ namespace PayableAccount {
             assert caller = 0;
         }
 
-        // TMP: Convert `AccountCallArray` to 'Call'.
+        // Convert `AccountCallArray` to 'Call'.
         let (calls: Call*) = alloc();
         _from_call_array_to_call(call_array_len, call_array, calldata, calls);
         let calls_len = call_array_len;
@@ -309,7 +307,7 @@ namespace PayableAccount {
             message=transaction_hash, public_key=_public_key, signature_r=sig_r, signature_s=sig_s
         );
         
-        // TMP: Convert `AccountCallArray` to 'Call'.
+        // Convert `PayableAccountCallArray` to 'Call'.
         let (calls: Call*) = alloc();
         _from_paid_call_array_to_call(call_array_len, call_array, calldata, calls);
         let calls_len = call_array_len;
