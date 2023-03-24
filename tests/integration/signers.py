@@ -6,11 +6,10 @@ from starkware.starknet.core.os.contract_address.contract_address import (
 from starkware.starknet.definitions.general_config import StarknetChainId
 from starkware.starknet.services.api.gateway.transaction import InvokeFunction, DeployAccount
 from starkware.starknet.business_logic.transaction.objects import InternalTransaction, InternalDeclare, TransactionExecutionInfo
-from starkware.starknet.public.abi import get_selector_from_name
 from nile.signer import Signer, TRANSACTION_VERSION
-from nile.core.types.utils import from_call_to_call_array, calculate_transaction_hash_common
+from nile.core.types.utils import calculate_transaction_hash_common
 from nile.utils import to_uint
-from utils import get_class_hash, get_contract_class
+from utils import get_class_hash, get_contract_class, get_raw_invoke, from_call_to_payable_call_array
 import eth_keys
 
 
@@ -320,29 +319,3 @@ class MockEthSigner(BaseSigner):
         sig_r = to_uint(signature.r)
         sig_s = to_uint(signature.s)
         return [signature.v, *sig_r, *sig_s]
-
-
-def get_raw_invoke(sender, calls):
-    """Return raw invoke"""
-    call_array, calldata = from_call_to_call_array(calls)
-    raw_invocation = sender.__execute__(call_array, calldata)
-    return raw_invocation
-
-
-def from_call_to_payable_call_array(payer_address, calls):
-    """Transform from Payable Call to Payable CallArray."""
-    call_array = []
-    calldata = []
-    for _, call in enumerate(calls):
-        assert len(call) == 3, "Invalid payable call parameters"
-        entry = (
-            call[0],
-            get_selector_from_name(call[1]),
-            payer_address,
-            len(calldata),
-            len(call[2]),
-        )
-        call_array.extend(entry)
-        calldata.extend(call[2])
-    payable_calldata = [len(calls), *call_array, len(calldata), *calldata]
-    return payable_calldata

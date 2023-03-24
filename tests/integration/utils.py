@@ -10,7 +10,7 @@ from starkware.starknet.compiler.compile import compile_starknet_files
 from starkware.starknet.testing.starknet import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
-
+from nile.core.types.utils import from_call_to_call_array
 
 MAX_UINT256 = (2**128 - 1, 2**128 - 1)
 INVALID_UINT256 = (MAX_UINT256[0] + 1, MAX_UINT256[1])
@@ -39,6 +39,30 @@ def contract_path(name):
     else:
         return str(_root / "src/cairo" / name)
 
+def get_raw_invoke(sender, calls):
+    """Return raw invoke"""
+    call_array, calldata = from_call_to_call_array(calls)
+    raw_invocation = sender.__execute__(call_array, calldata)
+    return raw_invocation
+
+
+def from_call_to_payable_call_array(payer_address, calls):
+    """Transform from Payable Call to Payable CallArray."""
+    call_array = []
+    calldata = []
+    for _, call in enumerate(calls):
+        assert len(call) == 3, "Invalid payable call parameters"
+        entry = (
+            call[0],
+            get_selector_from_name(call[1]),
+            payer_address,
+            len(calldata),
+            len(call[2]),
+        )
+        call_array.extend(entry)
+        calldata.extend(call[2])
+    payable_calldata = [len(calls), *call_array, len(calldata), *calldata]
+    return payable_calldata
 
 def assert_event_emitted(tx_exec_info, from_address, name, data, order=0):
     """Assert one single event is fired with correct data."""
