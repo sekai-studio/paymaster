@@ -147,7 +147,7 @@ async def test_execute(account_factory):
 
 @pytest.mark.asyncio
 async def test_multicall(account_factory):
-    payable_account, _, initializable_1, initializable_2, _ = account_factory
+    payable_account, _, initializable_1, initializable_2, *_ = account_factory
 
     execution_info = await initializable_1.initialized().call()
     assert execution_info.result == (0,)
@@ -243,7 +243,7 @@ async def test_public_key_setter_different_account(account_factory):
 
 @pytest.mark.asyncio
 async def test_account_takeover_execute_with_reentrant_call(account_factory):
-    payable_account, _, _, _, attacker = account_factory
+    payable_account, _, _, _, attacker, *_ = account_factory
 
     await assert_revert(
         payable_signer.send_transaction(
@@ -257,7 +257,7 @@ async def test_account_takeover_execute_with_reentrant_call(account_factory):
 
 @pytest.mark.asyncio
 async def test_account_takeover_execute_paid_with_reentrant_call(account_factory):
-    payable_account, _, _, _, attacker = account_factory
+    payable_account, _, _, _, attacker, *_ = account_factory
 
     await assert_revert(
         payable_signer.send_transaction(
