@@ -64,25 +64,25 @@ class PayableAccount(Account):
 
     async def sign_invoke_paid_transaction(
         self,
-        paid_calls: PayableCalls,
+        payable_calls: PayableCalls,
     ) -> Invoke:
-        paid_execute_tx = await self._prepare_invoke_paid_function(paid_calls)
+        paid_execute_tx = await self._prepare_invoke_paid_function(payable_calls)
         signature = self.signer.sign_transaction(paid_execute_tx)
         return _add_signature_to_transaction(paid_execute_tx, signature)
 
     async def _prepare_invoke_paid_function(
         self,
-        paid_calls: PayableCalls,
+        payable_calls: PayableCalls,
     ) -> Invoke:
         """
         Takes paid calls and creates Invoke from them.
 
-        :param paid_calls: Single call or list of paid calls.
+        :param payable_calls: Single call or list of paid calls.
         :return: Invoke created from the paid calls (without the signature).
         """
         nonce = await self.get_nonce_payer()
 
-        call_descriptions, calldata = _merge_paid_calls(ensure_iterable(paid_calls))
+        call_descriptions, calldata = _merge_payable_calls(ensure_iterable(payable_calls))
         wrapped_calldata = _execute_payload_serializer.serialize(
             {"call_array": call_descriptions, "calldata": calldata}
         )
@@ -102,29 +102,29 @@ class PayableAccount(Account):
         return _add_max_fee_to_transaction(transaction, max_fee)
 
 
-def _parse_paid_call(paid_call: PayableCall, entire_calldata: List) -> Tuple[Dict, List]:
+def _parse_payable_call(payable_call: PayableCall, entire_calldata: List) -> Tuple[Dict, List]:
     _data = {
-        "to": paid_call.to_addr,
-        "selector": paid_call.selector,
-        "payer": paid_call.payer_addr,
+        "to": payable_call.to_addr,
+        "selector": payable_call.selector,
+        "payer": payable_call.payer_addr,
         "data_offset": len(entire_calldata),
-        "data_len": len(paid_call.calldata),
+        "data_len": len(payable_call.calldata),
     }
-    entire_calldata += paid_call.calldata
+    entire_calldata += payable_call.calldata
 
     return _data, entire_calldata
 
-def _merge_paid_calls(calls: Iterable[PayableCall]) -> Tuple[List[Dict], List[int]]:
+def _merge_payable_calls(calls: Iterable[PayableCall]) -> Tuple[List[Dict], List[int]]:
     call_descriptions = []
     entire_calldata = []
     for call in calls:
-        data, entire_calldata = _parse_paid_call(call, entire_calldata)
+        data, entire_calldata = _parse_payable_call(call, entire_calldata)
         call_descriptions.append(data)
 
     return call_descriptions, entire_calldata
 
 _felt_serializer = FeltSerializer()
-_paid_call_description = StructSerializer(
+_payable_call_description = StructSerializer(
     OrderedDict(
         to=_felt_serializer,
         selector=_felt_serializer,
@@ -135,7 +135,7 @@ _paid_call_description = StructSerializer(
 )
 _execute_payload_serializer = PayloadSerializer(
     OrderedDict(
-        call_array=ArraySerializer(_paid_call_description),
+        call_array=ArraySerializer(_payable_call_description),
         calldata=ArraySerializer(_felt_serializer),
     )
 )

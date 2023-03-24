@@ -252,7 +252,7 @@ namespace PayableAccount {
 
         let (payer_tx_info) = get_tx_info();
         // Disallow deprecated tx versions
-        with_attr error_message( "PayableAccount: called with deprecated tx version") {
+        with_attr error_message("PayableAccount: called with deprecated tx version") {
             assert is_le_felt(TRANSACTION_VERSION, payer_tx_info.version) = TRUE;
         }
 
@@ -305,9 +305,9 @@ namespace PayableAccount {
 
         let pedersen_ptr = hash_ptr;
 
-        // verify_ecdsa_signature(
-        //     message=transaction_hash, public_key=_public_key, signature_r=sig_r, signature_s=sig_s
-        // );
+        verify_ecdsa_signature(
+            message=transaction_hash, public_key=_public_key, signature_r=sig_r, signature_s=sig_s
+        );
         
         // TMP: Convert `AccountCallArray` to 'Call'.
         let (calls: Call*) = alloc();
@@ -357,7 +357,7 @@ namespace PayableAccount {
         }
 
         // check the current call
-        with_attr error_message( "PayableAccount: caller and payer addresses are not the same") {
+        with_attr error_message("PayableAccount: caller and payer addresses are not the same") {
             assert caller = [call_array].payer;
         }
 

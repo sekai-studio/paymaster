@@ -130,6 +130,31 @@ class State:
         return starknet
 
 
+class Account:
+    """
+    Utility for deploying Account contract.
+
+    Parameters
+    ----------
+
+    public_key : int
+
+    Examples
+    ----------
+
+    >>> starknet = await State.init()
+    >>> account = await Account.deploy(public_key)
+
+    """
+    get_class = get_contract_class("Account")
+
+    async def deploy(public_key):
+        account = await starknet.deploy(
+            contract_class=Account.get_class,
+            constructor_calldata=[public_key]
+        )
+        return account
+
 class PayableAccount:
     """
     Utility for deploying PayableAccount contract.

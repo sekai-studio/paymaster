@@ -6,11 +6,13 @@ from starkware.starknet.core.os.contract_address.contract_address import (
 from starkware.starknet.definitions.general_config import StarknetChainId
 from starkware.starknet.services.api.gateway.transaction import InvokeFunction, DeployAccount
 from starkware.starknet.business_logic.transaction.objects import InternalTransaction, InternalDeclare, TransactionExecutionInfo
+from starkware.starknet.public.abi import get_selector_from_name
 from nile.signer import Signer, TRANSACTION_VERSION
 from nile.core.types.utils import from_call_to_call_array, calculate_transaction_hash_common
 from nile.utils import to_uint
 from utils import get_class_hash, get_contract_class
 import eth_keys
+
 
 
 class BaseSigner():
@@ -52,6 +54,8 @@ class BaseSigner():
             version=TRANSACTION_VERSION,
             nonce=nonce,
         )
+
+        print("TX ------->", external_tx)
 
         tx = InternalTransaction.from_external(
             external_tx=external_tx, general_config=state.general_config
@@ -152,7 +156,7 @@ class BaseSigner():
 
 class MockSigner(BaseSigner):
     """
-    Utility for sending signed transactions to a PayableAccount on Starknet.
+    Utility for sending signed transactions to an Account on Starknet.
 
     Parameters
     ----------
@@ -184,11 +188,121 @@ class MockSigner(BaseSigner):
     def __init__(self, private_key):
         self.signer = Signer(private_key)
         self.public_key = self.signer.public_key
-        self.class_hash = get_class_hash("PayableAccount")
+        self.class_hash = get_class_hash("Account")
 
     def sign(self, transaction_hash):
         sig_r, sig_s = self.signer.sign(transaction_hash)
         return [sig_r, sig_s]
+
+class MockPayableSigner(MockSigner):
+    """
+    Utility for sending signed transactions to a PayableAccount on Starknet.
+
+    Parameters
+    ----------
+
+    private_key : int
+
+    Examples
+    ---------
+    Constructing a MockPayableSigner object
+
+    >>> signer = MockPayableSigner(1234)
+
+    Sending a transaction
+
+    >>> await signer.send_transaction(
+            payable_account, contract_address, 'contract_method', [arg_1]
+        )
+
+    Sending multiple transactions
+
+    >>> await signer.send_transactions(
+            payable_account, [
+                (contract_address, 'contract_method', [arg_1]),
+                (contract_address, 'another_method', [arg_1, arg_2])
+            ]
+        )
+
+    """
+    def __init__(self, private_key):
+        self.signer = Signer(private_key)
+        self.public_key = self.signer.public_key
+        self.class_hash = get_class_hash("PayableAccount")
+
+    async def generate_payable_transaction(self, payable_account, payer_account, to, selector_name, calldata, nonce=None, max_fee=0):
+        return await self.generate_payable_transactions(payable_account, payer_account, [(to, selector_name, calldata)], nonce, max_fee)
+
+    async def generate_payable_transactions(
+        self,
+        payable_account,
+        payer_account,
+        calls,
+        nonce=None,
+        max_fee=0
+    ) -> InvokeFunction:
+        payable_calldata = from_call_to_payable_call_array(payer_account.contract_address, calls)
+        
+        if nonce is None:
+            payer_raw_invocation = get_raw_invoke(payer_account, calls)
+            payer_state = payer_raw_invocation.state
+            nonce = await payer_state.state.get_nonce_at(payer_account.contract_address)
+
+        transaction_hash = calculate_transaction_hash_common(
+            tx_hash_prefix=TransactionHashPrefix.INVOKE,
+            contract_address=payable_account.contract_address,
+            entry_point_selector=0,
+            calldata=payable_calldata,
+            version=TRANSACTION_VERSION,
+            chain_id=StarknetChainId.TESTNET.value,
+            additional_data=[nonce],
+            max_fee=max_fee,
+        )
+
+        signature = self.sign(transaction_hash)
+
+        tx = InvokeFunction(
+            contract_address=payable_account.contract_address,
+            calldata=payable_calldata,
+            entry_point_selector=None,
+            signature=signature,
+            max_fee=max_fee,
+            version=TRANSACTION_VERSION,
+            nonce=nonce,
+        )
+
+        print("PAYABLE TX ------->", tx)
+
+        return tx
+    
+    async def calculate_payable_transaction_hash(self, payable_account, payer_account, to, selector_name, calldata, nonce=None, max_fee=0):
+        return await self.calculate_payable_transactions_hash(payable_account, payer_account, [(to, selector_name, calldata)], nonce, max_fee)
+
+    async def calculate_payable_transactions_hash(
+        self,
+        payable_account,
+        payer_account,
+        calls,
+        nonce=None,
+        max_fee=0
+    ) -> int:
+        payable_calldata = from_call_to_payable_call_array(payer_account.contract_address, calls)
+        
+        if nonce is None:
+            payer_raw_invocation = get_raw_invoke(payer_account, calls)
+            payer_state = payer_raw_invocation.state
+            nonce = await payer_state.state.get_nonce_at(payer_account.contract_address)
+        
+        return calculate_transaction_hash_common(
+            tx_hash_prefix=TransactionHashPrefix.INVOKE,
+            contract_address=payable_account.contract_address,
+            entry_point_selector=0,
+            calldata=payable_calldata,
+            version=TRANSACTION_VERSION,
+            chain_id=StarknetChainId.TESTNET.value,
+            additional_data=[nonce],
+            max_fee=max_fee,
+        )
 
 
 class MockEthSigner(BaseSigner):
@@ -213,7 +327,26 @@ class MockEthSigner(BaseSigner):
 
 
 def get_raw_invoke(sender, calls):
-    """Return raw invoke, remove when test framework supports `invoke`."""
+    """Return raw invoke"""
     call_array, calldata = from_call_to_call_array(calls)
     raw_invocation = sender.__execute__(call_array, calldata)
     return raw_invocation
+
+
+def from_call_to_payable_call_array(payer_address, calls):
+    """Transform from Payable Call to Payable CallArray."""
+    call_array = []
+    calldata = []
+    for _, call in enumerate(calls):
+        assert len(call) == 3, "Invalid payable call parameters"
+        entry = (
+            call[0],
+            get_selector_from_name(call[1]),
+            payer_address,
+            len(calldata),
+            len(call[2]),
+        )
+        call_array.extend(entry)
+        calldata.extend(call[2])
+    payable_calldata = [len(calls), *call_array, len(calldata), *calldata]
+    return payable_calldata

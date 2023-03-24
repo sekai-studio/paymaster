@@ -14,8 +14,8 @@ from src.python.connector import Connector
 async def main():
 	load_dotenv()
     
-	payer_address = os.getenv('PAYER_ADDRESS')
-	payer_private_key = os.getenv('PAYER_PRIVATE_KEY')
+	payer_address = int(os.getenv('PAYER_ADDRESS'), 0)
+	payer_private_key = int(os.getenv('PAYER_PRIVATE_KEY'), 0)
 
 	connector = Connector(
         network="https://alpha4.starknet.io",
@@ -27,7 +27,8 @@ async def main():
 	# PayableAccount declaration
 
 	print("[Paymaster] Starting declaration of PayableAccount.")
-	payable_account_compiled = pathlib.Path('./build/PayableAccount.json').read_text("utf-8")
+	payable_account_compiled_path = path_root / 'build/PayableAccount.json'
+	payable_account_compiled = payable_account_compiled_path.read_text("utf-8")
 	payable_account_declare = await Contract.declare(
 		account=connector.payer_account, 
 		compiled_contract=payable_account_compiled, 

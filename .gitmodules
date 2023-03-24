@@ -1,6 +1,7 @@
 [submodule "cairo_contracts"]
 	path = lib/cairo_contracts
 	url = https://github.com/OpenZeppelin/cairo-contracts
+	branch = release-v0.6.1
 [submodule "cairo_lang"]
 	path = lib/cairo_lang
 	url = https://github.com/starkware-libs/cairo-lang

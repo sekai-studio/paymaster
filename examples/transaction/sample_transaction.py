@@ -10,11 +10,10 @@ from starknet_py.net.client_models import Call
 from starknet_py.contract import Contract
 from starknet_py.net.client_models import Invoke
 from starknet_py.proxy.contract_abi_resolver import ProxyConfig
-from starkware.starknet.cli.starknet_cli import print_invoke_tx
 
 from src.python.connector import Connector
 from src.python.connector import ConnectorUtils
-from src.python.paymaster import PaidCall
+from src.python.paymaster import PayableCall
 from src.python.proxy import CustomProxyCheck
 
 
@@ -47,7 +46,7 @@ async def generate_user_signed_tx(
             amount
         )
         # TODO improve this
-        transfer_prepare_paid = PaidCall(
+        transfer_prepare_paid = PayableCall(
             to_addr=transfer_prepare.to_addr,
             selector=transfer_prepare.selector,
             payer_addr=payer,
@@ -85,8 +84,7 @@ async def main():
         recipient_address=os.getenv('RECIPIENT_ADDRESS'),
         amount=int(1e17)
     )
-    print_invoke_tx(user_signed_tx, 1536727068981429685321)
-    
+
     # calldata to match the executePaid selector arguments
     calldata = [*user_signed_tx.calldata, len(user_signed_tx.signature), *user_signed_tx.signature]
     

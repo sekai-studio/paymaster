@@ -1,6 +1,6 @@
 %lang starknet
 
-from src.cairo.paidaccount.library import AccountCallArray, PayableAccountCallArray
+from src.cairo.payableaccount.library import AccountCallArray, PayableAccountCallArray
 
 @contract_interface
 namespace IPayableAccount {
