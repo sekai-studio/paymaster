@@ -55,8 +55,6 @@ class BaseSigner():
             nonce=nonce,
         )
 
-        print("TX ------->", external_tx)
-
         tx = InternalTransaction.from_external(
             external_tx=external_tx, general_config=state.general_config
         )
@@ -270,8 +268,6 @@ class MockPayableSigner(MockSigner):
             version=TRANSACTION_VERSION,
             nonce=nonce,
         )
-
-        print("PAYABLE TX ------->", tx)
 
         return tx
     
