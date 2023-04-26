@@ -1,4 +1,4 @@
-cairo-nile
-cairo-lang
-starknet-py==0.14.0a0
+cairo-nile==0.14.0
+cairo-lang==0.11.0.2
+starknet-py==0.15.1
 python-dotenv
