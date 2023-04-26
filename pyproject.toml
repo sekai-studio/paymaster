@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "payamster"
+version = "0.0.1"
+authors = [
+  { name="Pierre-Louis Janand", email="pierrelouis@sekai.gg" },
+]
+description = "Library for sponsored Starknet transactions"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/sekai-studio/paymaster"
+
+[tool.poetry.dependencies]
+python = "~3.9"
+cairo-lang = "==0.11.0.2"
+cairo-nile = "==0.14.0"
+starknet-py = "==0.15.1"
+python-dotenv = "==1.0.0"

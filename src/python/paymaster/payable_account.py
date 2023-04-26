@@ -11,7 +11,7 @@ from starknet_py.net.models import (
     StarknetChainId,
     Invoke
 )
-from starknet_py.net import KeyPair
+from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starknet_py.net.models import (
     AddressRepresentation,
     StarknetChainId

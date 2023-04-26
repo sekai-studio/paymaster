@@ -6,9 +6,6 @@ from nile.signer import TRANSACTION_VERSION
 from nile.utils.test import assert_revert, assert_event_emitted
 from utils import get_contract_class, cached_contract, State, Account, PayableAccount, IACCOUNT_ID
 
-from starkware.starknet.core.os.transaction_hash.transaction_hash import TransactionHashPrefix
-from starkware.starknet.definitions.general_config import StarknetChainId
-
 payer_signer = MockSigner(7634895021829437)
 payable_signer = MockPayableSigner(234539310138138347)
 other_payer_signer = MockSigner(3987656789032451)

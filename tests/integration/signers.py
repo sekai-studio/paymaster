@@ -6,8 +6,8 @@ from starkware.starknet.core.os.contract_address.contract_address import (
 from starkware.starknet.definitions.general_config import StarknetChainId
 from starkware.starknet.services.api.gateway.transaction import InvokeFunction, DeployAccount
 from starkware.starknet.business_logic.transaction.objects import InternalTransaction, InternalDeclare, TransactionExecutionInfo
+from starkware.starknet.core.os.transaction_hash.transaction_hash import calculate_transaction_hash_common
 from nile.signer import Signer, TRANSACTION_VERSION
-from nile.core.types.utils import calculate_transaction_hash_common
 from nile.utils import to_uint
 from utils import get_class_hash, get_contract_class, get_raw_invoke, from_call_to_payable_call_array
 import eth_keys
@@ -45,7 +45,7 @@ class BaseSigner():
         signature = self.sign(transaction_hash)
 
         external_tx = InvokeFunction(
-            contract_address=account.contract_address,
+            sender_address=account.contract_address,
             calldata=raw_invocation.calldata,
             entry_point_selector=None,
             signature=signature,
@@ -88,22 +88,22 @@ class BaseSigner():
 
         signature = self.sign(transaction_hash)
 
-        tx = InternalDeclare.create(
-            sender_address=account.contract_address,
+        tx = InternalDeclare.create_deprecated(
             contract_class=contract_class,
             chain_id=StarknetChainId.TESTNET.value,
+            sender_address=account.contract_address,
             max_fee=max_fee,
             version=TRANSACTION_VERSION,
-            nonce=nonce,
             signature=signature,
+            nonce=nonce,
         )
 
         execution_info = await state.execute_tx(tx=tx)
 
-        await state.state.set_contract_class(
-            class_hash=tx.class_hash,
-            contract_class=contract_class
-        )
+        # await state.state.set_contract_class_cache(
+        #     class_hash=tx.class_hash,
+        #     contract_classes=contract_class
+        # )
         return class_hash, execution_info
 
     async def deploy_account(
@@ -259,7 +259,7 @@ class MockPayableSigner(MockSigner):
         signature = self.sign(transaction_hash)
 
         tx = InvokeFunction(
-            contract_address=payable_account.contract_address,
+            sender_address=payable_account.contract_address,
             calldata=payable_calldata,
             entry_point_selector=None,
             signature=signature,
